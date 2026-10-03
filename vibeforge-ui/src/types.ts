@@ -20,6 +20,8 @@ export type Mode = 'fast' | 'deep' | 'agentic'
 
 export interface ProgressEvent {
   node: string
+  /** present when node === 'error' */
+  message?: string
   data?: {
     emotion?: string
     energy?: string
