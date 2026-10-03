@@ -3,9 +3,9 @@
 import pytest
 from pydantic import ValidationError
 
-from mood_playlist_agent.application import GenerationRequest
-from mood_playlist_agent.memory import _compact_sections
-from mood_playlist_agent.utils import count_tokens, ensure_context_budget
+from vibeforge.application import GenerationRequest
+from vibeforge.memory import _compact_sections
+from vibeforge.utils import count_tokens, ensure_context_budget
 
 
 def test_generation_request_normalizes_user_input():
@@ -55,7 +55,7 @@ def test_preference_sections_are_compacted():
 
 
 def test_agentic_pipeline_allows_two_refinements():
-    from mood_playlist_agent.graph_agent import PlaylistCritique, _route_after_critique
+    from vibeforge.graph_agent import PlaylistCritique, _route_after_critique
 
     critique = PlaylistCritique(score=5, issues=["needs work"], feedback="Improve it")
     base = {"critique": critique, "refinement_attempts": 0}
@@ -66,7 +66,7 @@ def test_agentic_pipeline_allows_two_refinements():
 
 
 def test_generation_service_caches_base_playlist(monkeypatch):
-    from mood_playlist_agent.application import GenerationService
+    from vibeforge.application import GenerationService
     from tests.test_models import make_playlist
 
     service = GenerationService()
@@ -92,7 +92,7 @@ def test_generation_service_caches_base_playlist(monkeypatch):
 
 
 def test_generation_service_rejects_invalid_generated_playlist(monkeypatch):
-    from mood_playlist_agent.application import GenerationService
+    from vibeforge.application import GenerationService
     from tests.test_models import make_playlist
 
     service = GenerationService()
@@ -104,8 +104,8 @@ def test_generation_service_rejects_invalid_generated_playlist(monkeypatch):
 
 
 def test_generation_service_accepts_repaired_agentic_playlist_under_ten_tracks(monkeypatch):
-    from mood_playlist_agent.application import GenerationService
-    from mood_playlist_agent.quality import repair_playlist
+    from vibeforge.application import GenerationService
+    from vibeforge.quality import repair_playlist
     from tests.test_models import make_playlist, make_track
 
     playlist = make_playlist()
@@ -124,7 +124,7 @@ def test_generation_service_accepts_repaired_agentic_playlist_under_ten_tracks(m
 
 
 def test_generation_service_falls_back_to_in_process_cache_when_redis_unreachable(monkeypatch):
-    from mood_playlist_agent.application import GenerationService
+    from vibeforge.application import GenerationService
 
     monkeypatch.setenv("REDIS_URL", "redis://127.0.0.1:1")  # nothing listens here
     service = GenerationService()
@@ -133,7 +133,7 @@ def test_generation_service_falls_back_to_in_process_cache_when_redis_unreachabl
 
 
 def test_generation_service_invalidate_cache_forgets_cached_playlist(monkeypatch):
-    from mood_playlist_agent.application import GenerationService
+    from vibeforge.application import GenerationService
     from tests.test_models import make_playlist
 
     service = GenerationService()
@@ -158,8 +158,8 @@ def test_generation_service_invalidate_cache_forgets_cached_playlist(monkeypatch
 
 
 def test_generation_service_stream_passes_enrichment_setting(monkeypatch):
-    import mood_playlist_agent.graph_agent as graph_agent
-    from mood_playlist_agent.application import GenerationService
+    import vibeforge.graph_agent as graph_agent
+    from vibeforge.application import GenerationService
 
     observed: dict[str, bool] = {}
 
@@ -175,9 +175,9 @@ def test_generation_service_stream_passes_enrichment_setting(monkeypatch):
 
 
 def test_deterministic_playlist_issues_skip_critic_model():
-    from mood_playlist_agent.graph_agent import _critique_playlist
+    from vibeforge.graph_agent import _critique_playlist
     from tests.test_models import make_playlist
-    from mood_playlist_agent.models import MoodAnalysis
+    from vibeforge.models import MoodAnalysis
 
     playlist = make_playlist()
     for track in playlist.tracks[1:]:
@@ -201,7 +201,7 @@ def test_deterministic_playlist_issues_skip_critic_model():
 
 
 def test_playlist_rule_evaluator_returns_langsmith_score():
-    from mood_playlist_agent.quality import playlist_rule_evaluator
+    from vibeforge.quality import playlist_rule_evaluator
     from tests.test_models import make_playlist
 
     playlist = make_playlist()

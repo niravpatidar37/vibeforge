@@ -15,9 +15,9 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
-from mood_playlist_agent.application import GenerationRequest, generation_service
-from mood_playlist_agent.models import Playlist
-from mood_playlist_agent.utils import DEFAULT_MODEL, AVAILABLE_MODELS
+from vibeforge.application import GenerationRequest, generation_service
+from vibeforge.models import Playlist
+from vibeforge.utils import DEFAULT_MODEL, AVAILABLE_MODELS
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ class FeedbackRequest(BaseModel):
 
 @app.post("/feedback")
 def feedback(req: FeedbackRequest) -> dict[str, bool]:
-    from mood_playlist_agent.memory import save_feedback
+    from vibeforge.memory import save_feedback
     save_feedback(
         [track.model_dump() for track in req.loved],
         [track.model_dump() for track in req.disliked],

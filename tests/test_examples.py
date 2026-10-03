@@ -16,7 +16,7 @@ def isolated_memory(tmp_path, monkeypatch):
 
 
 def test_generate_playlist_chill():
-    from mood_playlist_agent.playlist_agent import generate_playlist
+    from vibeforge.playlist_agent import generate_playlist
     playlist = generate_playlist("feeling chill after a long day", spotify_enrich=False)
     assert playlist.name
     assert len(playlist.tracks) == 10
@@ -24,14 +24,14 @@ def test_generate_playlist_chill():
 
 
 def test_generate_playlist_workout():
-    from mood_playlist_agent.playlist_agent import generate_playlist
+    from vibeforge.playlist_agent import generate_playlist
     playlist = generate_playlist("pumped up for gym, need high energy", spotify_enrich=False)
     assert playlist.energy_level in {"medium", "high"}
     assert len(playlist.tracks) == 10
 
 
 def test_generate_playlist_multilingual():
-    from mood_playlist_agent.playlist_agent import generate_playlist
+    from vibeforge.playlist_agent import generate_playlist
     playlist = generate_playlist("nostalgic Bollywood evening", spotify_enrich=False)
     assert playlist.name
     genres_lower = [g.lower() for g in playlist.genres]
@@ -39,14 +39,14 @@ def test_generate_playlist_multilingual():
 
 
 def test_generate_playlist_with_crew():
-    from mood_playlist_agent.crew_agent import generate_playlist_with_crew
+    from vibeforge.crew_agent import generate_playlist_with_crew
     playlist = generate_playlist_with_crew("Sunday morning coffee and jazz", spotify_enrich=False)
     assert playlist.name
     assert len(playlist.tracks) == 10
 
 
 def test_generate_playlist_with_graph():
-    from mood_playlist_agent.graph_agent import generate_playlist_with_graph
+    from vibeforge.graph_agent import generate_playlist_with_graph
     playlist = generate_playlist_with_graph("birthday celebration, high energy party", spotify_enrich=False)
     assert playlist.name
     assert len(playlist.tracks) == 10
@@ -54,7 +54,7 @@ def test_generate_playlist_with_graph():
 
 
 def test_generate_playlist_with_graph_streams():
-    from mood_playlist_agent.graph_agent import stream_playlist_with_graph
+    from vibeforge.graph_agent import stream_playlist_with_graph
     nodes_seen = []
     state = {}
     for node_name, current in stream_playlist_with_graph(

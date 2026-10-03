@@ -1,5 +1,5 @@
-from mood_playlist_agent.graph_agent import _finalise
-from mood_playlist_agent.models import MoodAnalysis
+from vibeforge.graph_agent import _finalise
+from vibeforge.models import MoodAnalysis
 from tests.test_models import make_playlist, make_track
 
 
@@ -14,7 +14,7 @@ def _state(playlist, mood_analysis=None, spotify_enrich=False):
 
 
 def test_finalise_repairs_duplicate_and_keeps_playlist(monkeypatch):
-    monkeypatch.setattr("mood_playlist_agent.graph_agent.save_session", lambda *a, **k: None)
+    monkeypatch.setattr("vibeforge.graph_agent.save_session", lambda *a, **k: None)
     playlist = make_playlist()
     for i, t in enumerate(playlist.tracks):
         t.genre = f"Genre {i}"
@@ -26,7 +26,7 @@ def test_finalise_repairs_duplicate_and_keeps_playlist(monkeypatch):
 
 
 def test_finalise_raises_on_unrepairable_bpm_violation(monkeypatch):
-    monkeypatch.setattr("mood_playlist_agent.graph_agent.save_session", lambda *a, **k: None)
+    monkeypatch.setattr("vibeforge.graph_agent.save_session", lambda *a, **k: None)
     playlist = make_playlist()
     playlist.tracks[0].bpm = 500
     mood_analysis = MoodAnalysis(
