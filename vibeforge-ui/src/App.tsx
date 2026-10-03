@@ -89,7 +89,7 @@ export default function App() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/" aria-label="VibeForge home">
-          <span className="brand-mark">vf</span>
+          <img className="brand-mark" src="/favicon.svg" alt="" width="28" height="28" />
           <span>VibeForge</span>
         </a>
         <span className="topbar-status"><span className="status-dot" /> studio mode</span>

@@ -1,4 +1,4 @@
-from mood_playlist_agent.quality import repair_playlist, validate_playlist
+from vibeforge.quality import repair_playlist, validate_playlist
 from tests.test_models import make_playlist, make_track
 
 

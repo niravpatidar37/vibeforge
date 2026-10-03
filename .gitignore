@@ -9,3 +9,6 @@ build/
 .pytest_cache/
 memory.json
 *.txt
+
+# Brand build fonts (SIL OFL, downloaded on demand)
+docs/brand/source/*.ttf

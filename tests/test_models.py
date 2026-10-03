@@ -2,7 +2,7 @@
 
 import pytest
 from pydantic import ValidationError
-from mood_playlist_agent.models import Track, Playlist, MoodAnalysis
+from vibeforge.models import Track, Playlist, MoodAnalysis
 
 
 def make_track(**kwargs):
@@ -77,18 +77,18 @@ class TestPlaylist:
 
 class TestContext:
     def test_temporal_context_returns_string(self):
-        from mood_playlist_agent.context import get_temporal_context
+        from vibeforge.context import get_temporal_context
         ctx = get_temporal_context()
         assert any(tod in ctx for tod in {"morning", "afternoon", "evening", "late night"})
 
     def test_build_context_string(self):
-        from mood_playlist_agent.context import build_context_string
+        from vibeforge.context import build_context_string
         ctx = build_context_string("studying")
         assert "Time:" in ctx
         assert "studying" in ctx
 
     def test_seed_track_in_context(self):
-        from mood_playlist_agent.context import build_context_string
+        from vibeforge.context import build_context_string
         ctx = build_context_string(seed="Blinding Lights by The Weeknd")
         assert "Blinding Lights" in ctx
 
@@ -96,7 +96,7 @@ class TestContext:
 class TestMemory:
     def test_save_and_load(self, tmp_path, monkeypatch):
         monkeypatch.setenv("VIBEFORGE_DATA_DIR", str(tmp_path))
-        import mood_playlist_agent.memory as mem
+        import vibeforge.memory as mem
         p = make_playlist()
         mem.save_session("chill vibes", p.model_dump())
         ctx = mem.get_preference_context()
@@ -104,7 +104,7 @@ class TestMemory:
 
     def test_save_feedback_loved(self, tmp_path, monkeypatch):
         monkeypatch.setenv("VIBEFORGE_DATA_DIR", str(tmp_path))
-        import mood_playlist_agent.memory as mem
+        import vibeforge.memory as mem
 
         track = {"title": "Blinding Lights", "artist": "The Weeknd", "genre": "Synth-pop"}
         mem.save_feedback([track], [])
@@ -118,7 +118,7 @@ class TestMemory:
     def test_save_feedback_disliked_removes_loved(self, tmp_path, monkeypatch):
         import json
         monkeypatch.setenv("VIBEFORGE_DATA_DIR", str(tmp_path))
-        import mood_playlist_agent.memory as mem
+        import vibeforge.memory as mem
 
         track = {"title": "Blinding Lights", "artist": "The Weeknd", "genre": "Synth-pop"}
         mem.save_feedback([track], [])
