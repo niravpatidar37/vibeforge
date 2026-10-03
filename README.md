@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="docs/brand/banner.svg" alt="VibeForge — Your mood. Forged into sound." width="100%">
+  <img src="docs/brand/banner.svg" alt="VibeForge — Fall in love with music again." width="100%">
 </p>
 
 <p align="center">
   <a href="https://github.com/niravpatidar37/vibeforge/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/niravpatidar37/vibeforge/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-11110f?logo=python&logoColor=d9f36a"></a>
-  <a href="https://langchain-ai.github.io/langgraph/"><img alt="LangGraph" src="https://img.shields.io/badge/agentic-LangGraph-11110f?labelColor=11110f&color=d9f36a"></a>
-  <a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" src="https://img.shields.io/badge/API-FastAPI-11110f?logo=fastapi&logoColor=d9f36a"></a>
-  <a href="https://react.dev/"><img alt="React" src="https://img.shields.io/badge/UI-React%2019-11110f?logo=react&logoColor=d9f36a"></a>
-  <a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/badge/managed%20by-uv-11110f"></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-d9f36a?labelColor=11110f"></a>
+  <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-140c0e?logo=python&logoColor=ff4f6d"></a>
+  <a href="https://langchain-ai.github.io/langgraph/"><img alt="LangGraph" src="https://img.shields.io/badge/agentic-LangGraph-140c0e?labelColor=140c0e&color=ff4f6d"></a>
+  <a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" src="https://img.shields.io/badge/API-FastAPI-140c0e?logo=fastapi&logoColor=ff4f6d"></a>
+  <a href="https://react.dev/"><img alt="React" src="https://img.shields.io/badge/UI-React%2019-140c0e?logo=react&logoColor=ff4f6d"></a>
+  <a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/badge/managed%20by-uv-140c0e"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-ff4f6d?labelColor=140c0e"></a>
 </p>
 
 <p align="center">
@@ -141,10 +141,15 @@ Everything is wrapped by one **application service** (`application.py`) shared b
 ## 🖥️ Web app
 
 <p align="center">
-  <img src="docs/ui-preview.png" alt="VibeForge web interface" width="420">
+  <img src="docs/ui-preview.png" alt="VibeForge web app: a turntable beside the prompt 'What does tonight feel like?'" width="100%">
 </p>
 
-The React + Vite UI in [`vibeforge-ui/`](vibeforge-ui/) talks to the FastAPI backend.
+The React + Vite UI in [`vibeforge-ui/`](vibeforge-ui/) is built like a record shop:
+
+- **Write a feeling.** A letter-style prompt with starter moods; Ctrl + Enter presses the record.
+- **The turntable.** The record spins at 33⅓ rpm while VibeForge works, and the tonearm drops in. In Studio session (agentic) mode, each LangGraph step streams in live: the mood read, curation takes, and the critic's score.
+- **A sleeve for every playlist.** Each result gets generated cover art (palette picked from the playlist, sun height set by its energy), with the record sliding out of the sleeve.
+- **Side A / Side B.** Ten tracks split like an LP. Each track has a dot that pulses at its BPM, Spotify and YouTube links, and ♥ / ✕ buttons that teach your taste memory.
 
 ```bash
 # Terminal 1: API
@@ -155,6 +160,8 @@ cd vibeforge-ui
 npm install
 npm run dev        # → http://localhost:5173
 ```
+
+Set `VITE_API_BASE` at build time if the API isn't on `http://localhost:8000`. Fonts are self-hosted from npm (`@fontsource`), so the UI makes no third-party requests; only the track links you click leave the app.
 
 It supports all three modes, live LangGraph progress over Server-Sent Events, model selection (including `hf:` models), Spotify enrichment, and per-track feedback.
 
@@ -267,14 +274,17 @@ vibeforge/
 
 | Asset | File |
 |---|---|
-| App mark | [`docs/brand/logo-mark.svg`](docs/brand/logo-mark.svg) · [`512 px PNG`](docs/brand/logo-mark-512.png) |
+| App mark (pick on a dark tile) | [`docs/brand/logo-mark.svg`](docs/brand/logo-mark.svg) · [`512 px PNG`](docs/brand/logo-mark-512.png) |
+| Pick only, no tile | [`docs/brand/logo-pick.svg`](docs/brand/logo-pick.svg) |
 | Horizontal logo, dark backgrounds | [`docs/brand/logo-horizontal-light.svg`](docs/brand/logo-horizontal-light.svg) |
 | Horizontal logo, light backgrounds | [`docs/brand/logo-horizontal-dark.svg`](docs/brand/logo-horizontal-dark.svg) |
 | README banner | [`docs/brand/banner.svg`](docs/brand/banner.svg) |
 | Social preview (1280×640) | [`docs/brand/social-preview.png`](docs/brand/social-preview.png) |
 | Square app icon (full-bleed, for `apple-touch-icon`) | [`docs/brand/app-icon-square.svg`](docs/brand/app-icon-square.svg) |
 
-Palette: ink `#11110f` · cream `#f4f1e9` · lime `#d9f36a` · coral `#ff7158`. Type: Space Grotesk and DM Mono (SIL OFL). Text in the SVGs is converted to outlines, so the files render the same everywhere without the fonts installed. To regenerate them:
+The mark is a guitar pick whose point doubles as the V, with two beamed eighth notes cut into it.
+
+Palette ("ember"): ink `#140c0e` · cream `#f7ede4` · amber `#ffb05c` · rose `#ff4f6d` · wine `#b3174f`. Type: Fraunces (soft, with an italic "Forge"), Instrument Sans, and DM Mono, all SIL OFL. Text in the SVGs is converted to outlines, so the files render the same everywhere without the fonts installed. To regenerate them:
 
 ```bash
 cd docs/brand/source

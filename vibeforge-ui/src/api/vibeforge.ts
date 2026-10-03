@@ -1,53 +1,79 @@
-import type { Playlist, Mode, ProgressEvent } from '../types'
+import type { Mode, Playlist, ProgressEvent, Track } from '../types'
+import { isPlaylist } from '../lib/validate'
 
-const BASE = 'http://localhost:8000'
+/** API origin. Override at build time with VITE_API_BASE; never put secrets in VITE_* vars (they ship to the browser). */
+export const API_BASE: string = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || 'http://localhost:8000'
 
-export async function fetchModels(): Promise<string[]> {
-  const res = await fetch(`${BASE}/models`)
-  if (!res.ok) throw new Error('Failed to fetch models')
-  return res.json()
-}
-
-export async function generatePlaylist(params: {
+export interface GenerateParams {
   mood: string
   context: string
   seed: string
   model: string
-  mode: Exclude<Mode, 'agentic'>
+  mode: Mode
   spotify_enrich: boolean
-}): Promise<Playlist> {
-  const res = await fetch(`${BASE}/generate`, {
+}
+
+async function errorFrom(res: Response, fallback: string): Promise<Error> {
+  const body = await res.json().catch(() => null) as { detail?: unknown } | null
+  const detail = typeof body?.detail === 'string' ? body.detail : null
+  return new Error(detail ?? `${fallback} (${res.status})`)
+}
+
+export async function fetchModels(signal?: AbortSignal): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/models`, { signal })
+  if (!res.ok) throw await errorFrom(res, 'Could not load models')
+  const data: unknown = await res.json()
+  if (!Array.isArray(data) || !data.every(m => typeof m === 'string')) throw new Error('Unexpected models response')
+  return data
+}
+
+export async function generatePlaylist(params: GenerateParams, signal?: AbortSignal): Promise<Playlist> {
+  const res = await fetch(`${API_BASE}/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
+    signal,
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }))
-    throw new Error(err.detail ?? 'Generation failed')
-  }
-  return res.json()
+  if (!res.ok) throw await errorFrom(res, 'Generation failed')
+  const data: unknown = await res.json()
+  if (!isPlaylist(data)) throw new Error('The server returned a playlist VibeForge could not read')
+  return data
 }
 
-export async function enrichPlaylist(playlist: Playlist): Promise<Playlist> {
-  const res = await fetch(`${BASE}/enrich`, {
+export async function enrichPlaylist(playlist: Playlist, signal?: AbortSignal): Promise<Playlist> {
+  const res = await fetch(`${API_BASE}/enrich`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(playlist),
+    signal,
   })
-  if (!res.ok) throw new Error('Playlist enrichment failed')
-  return res.json()
+  if (!res.ok) throw await errorFrom(res, 'Link enrichment failed')
+  const data: unknown = await res.json()
+  if (!isPlaylist(data)) throw new Error('Unexpected enrichment response')
+  return data
 }
 
-export function streamPlaylist(params: {
-  mood: string
-  context: string
-  seed: string
-  model: string
-  spotify_enrich: boolean
-  onEvent: (evt: ProgressEvent) => void
-  onPlaylist: (pl: Playlist) => void
-  onError: (msg: string) => void
-}): () => void {
+export async function saveFeedback(loved: Track[], disliked: Track[]): Promise<void> {
+  // Mirrors api.py FeedbackTrack: title + artist only, each 1..200 chars.
+  const strip = (t: Track) => ({ title: t.title.slice(0, 200), artist: t.artist.slice(0, 200) })
+  const res = await fetch(`${API_BASE}/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ loved: loved.map(strip), disliked: disliked.map(strip) }),
+  })
+  if (!res.ok) throw await errorFrom(res, 'Could not save your taste')
+}
+
+/** Agentic mode over Server-Sent Events. Returns a cancel function. */
+export function streamPlaylist(
+  params: Omit<GenerateParams, 'mode'>,
+  handlers: {
+    onEvent: (evt: ProgressEvent) => void
+    onPlaylist: (pl: Playlist) => void
+    onError: (msg: string) => void
+    onDone: () => void
+  },
+): () => void {
   const qs = new URLSearchParams({
     mood: params.mood,
     context: params.context,
@@ -55,25 +81,42 @@ export function streamPlaylist(params: {
     model: params.model,
     spotify_enrich: String(params.spotify_enrich),
   })
-  const es = new EventSource(`${BASE}/stream?${qs}`)
+  const es = new EventSource(`${API_BASE}/stream?${qs}`)
+  let finished = false
+  const finish = () => {
+    finished = true
+    es.close()
+  }
 
-  es.onmessage = (e) => {
-    const evt: ProgressEvent = JSON.parse(e.data)
-    params.onEvent(evt)
-    if (evt.node === 'finalise' && evt.data?.tracks) {
-      params.onPlaylist(evt.data as unknown as Playlist)
+  es.onmessage = (e: MessageEvent<string>) => {
+    let evt: ProgressEvent
+    try {
+      evt = JSON.parse(e.data) as ProgressEvent
+    } catch {
+      return // ignore malformed frames rather than crash
     }
-    if (evt.node === 'done' || evt.node === 'error') {
-      if (evt.node === 'error') params.onError((evt as any).message ?? 'Unknown error')
-      es.close()
+    if (typeof evt?.node !== 'string') return
+    if (evt.node === 'error') {
+      handlers.onError(typeof evt.message === 'string' ? evt.message : 'The studio hit a problem')
+      finish()
+      return
+    }
+    handlers.onEvent(evt)
+    if (evt.node === 'finalise' && evt.data) {
+      if (isPlaylist(evt.data)) handlers.onPlaylist(evt.data)
+      else handlers.onError('The server returned a playlist VibeForge could not read')
+    }
+    if (evt.node === 'done') {
+      handlers.onDone()
+      finish()
     }
   }
 
   es.onerror = () => {
-    params.onError('Connection to server lost')
-    es.close()
+    if (finished) return
+    handlers.onError('Lost the connection to the VibeForge server')
+    finish()
   }
 
-  // return a cleanup function so callers can cancel early
-  return () => es.close()
+  return finish
 }
